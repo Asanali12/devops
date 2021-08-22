@@ -1,0 +1,29 @@
+[project]
+name = ""
+version = ""
+description = ""
+authors = [
+    {name = "Asanali Fazylzhan", email = "sapswung@gmail.com"},
+]
+dependencies = [
+    "flask~=2.0",
+    "pytest~=6.2",
+    "requests~=2.26",
+    "autopep8~=1.5",
+    "isort~=5.9",
+    "pylint~=2.10",
+    "mypy~=0.910",
+]
+requires-python = ">=3.8"
+dynamic = ["classifiers"]
+license = {text = "MIT"}
+
+[project.urls]
+homepage = ""
+
+[build-system]
+requires = ["pdm-pep517"]
+build-backend = "pdm.pep517.api"
+
+[tool]
+[tool.pdm]
