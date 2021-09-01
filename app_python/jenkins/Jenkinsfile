@@ -6,12 +6,12 @@ pipeline {
         CODE = 'app.py'
         TESTS = 'tests'
         registry = "asanali99/python_app" 
-        registryCredential = 'docker_id' 
+        registryCredential = 'asanali_dockerhub' 
         dockerImage = '' 
     }
     agent { 
         dockerfile { 
-            dir 'jenkins'
+            dir 'app_python/jenkins'
             args '-u root -v $HOME/.cache:/root/.cache -v /var/run/docker.sock:/var/run/docker.sock'
         }
     }
