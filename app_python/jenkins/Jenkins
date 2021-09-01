@@ -1,0 +1,76 @@
+pipeline {
+
+    environment {
+        PDM_VERSION = '1.8.0'
+        APP_PATH = 'app_python'
+        CODE = 'app.py'
+        TESTS = 'tests'
+        registry = "asanali99/python_app" 
+        registryCredential = 'docker_id' 
+        dockerImage = '' 
+    }
+    agent { 
+        dockerfile { 
+            dir 'jenkins'
+            args '-u root -v $HOME/.cache:/root/.cache -v /var/run/docker.sock:/var/run/docker.sock'
+        }
+    }
+    stages {
+        stage('Checkout') {
+            steps {
+                checkout scm
+            }
+        }
+        stage('deps') {
+            steps {
+                dir("${APP_PATH}") {
+                    sh 'pdm install'
+                }
+            }
+        }
+        stage('lint-test') {
+            steps {
+                parallel (
+                    'codestyle': {
+                        dir("${APP_PATH}") {
+                            sh 'pdm run isort ${CODE}'-
+                        }
+                    },
+                    'lint': {
+                        dir("${APP_PATH}") {
+                            sh 'pdm run pylint ${CODE}'
+                        }
+                    }, 
+                    'test': {
+                        dir("${APP_PATH}") {
+                            sh 'pdm run python -m pytest ${TESTS}'
+                        }
+                    }
+                )
+                
+            }
+        }
+        stage('Build docker image') {
+            steps{
+                dir("${APP_PATH}") {
+                    script {
+                        dockerImage = docker.build registry + ":jenkins-$BUILD_NUMBER"
+                    }
+                }
+            }
+        }
+
+        stage('Deploy docker image') {
+            steps{
+                script {
+                    docker.withRegistry('', registryCredential) {
+                        dockerImage.push()
+                    }
+                }
+            }
+        }
+    }
+    post {
+        cleanup { cleanWs() }
+    }
+}
