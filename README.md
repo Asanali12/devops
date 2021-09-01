@@ -19,3 +19,8 @@ Access application in browser via address displayed in terminal.
 `sudo docker pull asanali99/devops_lab1:latest`
 - Run<br/>
 `docker run -p 5000:5000 asanali99/devops_lab1:latest`
+## Unit Test
+- Go to a directory with tests<br/>
+`cd tests`
+- Start tests using `pdm` and `pytest`<br/>
+`pdm run pytest`
