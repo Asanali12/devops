@@ -33,7 +33,7 @@ pipeline {
                 parallel (
                     'codestyle': {
                         dir("${APP_PATH}") {
-                            sh 'pdm run isort ${CODE}'-
+                            sh 'pdm run isort ${CODE}'
                         }
                     },
                     'lint': {
