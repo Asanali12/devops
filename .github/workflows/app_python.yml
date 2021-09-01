@@ -1,0 +1,110 @@
+# This workflow uses actions that are not certified by GitHub.
+# They are provided by a third-party and are governed by
+# separate terms of service, privacy policy, and support
+# documentation.
+
+# This workflow will install Deno then run Deno lint and test.
+# For more information see: https://github.com/denoland/setup-deno
+
+name: app_python
+
+on:
+  push:
+    branches: [master]
+
+env:
+  APP_PATH: ./app_python  # source root
+  CODE: app.py  # source code
+  TESTS: tests  # package with tests (inside source root)
+  IMAGE_NAME: asanali99/devops_lab1  # name for Docker image
+
+
+jobs:
+  lint_test:  # Run linters and test application
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: ${{ env.APP_PATH }}
+    strategy:
+        matrix:
+          python-version: [3.8, 3.9]
+  
+    steps:
+    - uses: actions/checkout@v2
+    - name: Set up Python ${{ matrix.python-version }}
+      uses: actions/setup-python@v2
+      with:
+        python-version: ${{ matrix.python-version }}
+      
+    - uses: pdm-project/setup-pdm@v2.1
+      name: Setup PDM
+      with:
+        python-version: ${{ matrix.python-version }}  
+        architecture: x64    # The target architecture (x86, x64) of the Python interpreter. the same as actions/setup-python
+        version: 1.8.0       # The version of PDM to install. Leave it as empty to use the latest version from PyPI
+        prerelease: true     # Allow prerelease versions to be installed
+        enable-pep582: true  # Enable PEP 582 package loading globally
+        
+    - name: Install dependencies
+      run: |
+        pdm install -v
+    
+    - name: Run code formatting
+      run: |
+        pdm run isort app.py
+      
+    - name: Run linters
+      run: |
+        pdm run pylint ${{ env.CODE }}
+    
+    - name: Run tests
+      run: |
+        pdm run python -m pytest ${{ env.TESTS }}
+      
+  push_to_registry: # push image to dockerhub
+    needs: ["lint_test"]
+    name: Push Docker image to Docker Hub
+    runs-on: ubuntu-latest
+    env:
+      REGISTRY: asanali99
+      IMAGENAME: python_app
+      TAG: latest
+    steps:
+      - name: Check out the repo
+        uses: actions/checkout@v2
+        with:
+          fetch-depth: 1
+      
+      - name: Set up QEMU
+        uses: docker/setup-qemu-action@v1
+
+      - name: Set up Docker Buildx
+        id: buildx
+        uses: docker/setup-buildx-action@v1
+      
+      - name: Cache Docker layers
+        uses: actions/cache@v2
+        with:
+          path: /tmp/.buildx-cache
+          key: ${{ runner.os }}-buildx-${{ github.sha }}
+          restore-keys: |
+            ${{ runner.os }}-buildx-
+      
+      - name: Log in to Docker Hub
+        uses: docker/login-action@v1
+        with:
+          username: ${{ secrets.DOCKERHUB_USERNAME }}
+          password: ${{ secrets.DOCKERHUB_TOKEN }}
+
+      - name: Build and push
+        uses: docker/build-push-action@v2
+        with:
+          context: ./app_python
+          builder: ${{ steps.buildx.outputs.name }}
+          push: true
+          tags: ${{ env.REGISTRY }}/${{ env.IMAGENAME }}:${{ env.TAG }}
+          cache-from: type=local,src=/tmp/.buildx-cache
+          cache-to: type=local,dest=/tmp/.buildx-cache-new
+      
+      # - name: Scan Docker image
+      #   run: docker scan ${{ env.IMAGENAME }}/${{ env.WORKINGDIR }}:${{ env.TAG }}
