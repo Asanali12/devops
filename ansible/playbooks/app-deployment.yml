@@ -1,0 +1,6 @@
+- name: Deploy app_python to the server
+  hosts: aws_server
+  become: yes
+
+  roles:
+    - roles/app-deployment

@@ -1,0 +1,22 @@
+---
+- name: Create directory
+  file:
+    path: "{{ deploy_path }}"
+    state: directory
+
+- name: Copy docker-compose.yml
+  template:
+    src: docker-compose.yml
+    dest: "{{ deploy_path }}/{{ docker_compose_file }}"
+    mode: 600
+    owner: root
+    group: root
+
+
+- name: Launch docker-compose
+  docker_compose:
+    project_src: "{{ deploy_path }}"
+    files:
+      - "{{ docker_compose_file }}"
+    state: present
+    pull: true

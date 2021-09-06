@@ -1,0 +1,4 @@
+---
+# vars file for app-deployment
+docker_compose_file: docker-compose.yml
+deploy_path: /opt/app_python
