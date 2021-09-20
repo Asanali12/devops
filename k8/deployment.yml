@@ -1,0 +1,21 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: dev-ops-app-deployment
+  labels:
+    app: dev-ops-app
+spec:
+  replicas: 3
+  selector:
+    matchLabels:
+      app: dev-ops-app
+  template:
+    metadata:
+      labels:
+        app: dev-ops-app
+    spec:
+      containers:
+      - name: dev-ops-app
+        image: asanali99/devops_lab1:latest
+        ports:
+        - containerPort: 8080
