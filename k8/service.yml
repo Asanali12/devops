@@ -5,7 +5,8 @@ metadata:
 spec:
   selector:
     app: dev-ops-app
+  type: LoadBalancer
   ports:
     - protocol: TCP
-      port: 80
-      targetPort: 9376
+      port: 8080
+      targetPort: 8080 
