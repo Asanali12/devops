@@ -14,6 +14,9 @@ imagePullSecrets: []
 nameOverride: ""
 fullnameOverride: ""
 
+config:
+  configMapName: my-configmap
+
 secret:
   name: pass
   password: mysecretpassword
